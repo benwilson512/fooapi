@@ -1,11 +1,26 @@
 defmodule FooapiWeb.Router do
   use FooapiWeb, :router
 
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  scope "/api", FooapiWeb do
+  scope "/" do
     pipe_through :api
+
+    forward "/api", Absinthe.Plug,
+      schema: FooapiWeb.Schema
+
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: FooapiWeb.Schema,
+      interface: :simple
   end
 end
